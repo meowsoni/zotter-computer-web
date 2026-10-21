@@ -1,15 +1,54 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { OutlineEffect } from 'three/addons/effects/OutlineEffect.js';
 
 const holder = document.getElementById('viewer');
 const hint = document.getElementById('viewer-hint');
+
+const palette = {
+  '9e917f': '#d9c9a9',
+  '6c5735': '#b99054',
+  '937a21': '#c3a750',
+  '534747': '#55656a',
+  '8d8d8d': '#b4bea2',
+};
+
+const paintShader = /* glsl */ `
+  varying vec3 vPaintPosition;
+
+  float paintHash(vec3 p) {
+    p = fract(p * 0.1031);
+    p += dot(p, p.yzx + 33.33);
+    return fract((p.x + p.y) * p.z);
+  }
+
+  float paintNoise(vec3 p) {
+    vec3 i = floor(p), f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    return mix(
+      mix(mix(paintHash(i), paintHash(i + vec3(1,0,0)), f.x),
+          mix(paintHash(i + vec3(0,1,0)), paintHash(i + vec3(1,1,0)), f.x), f.y),
+      mix(mix(paintHash(i + vec3(0,0,1)), paintHash(i + vec3(1,0,1)), f.x),
+          mix(paintHash(i + vec3(0,1,1)), paintHash(i + vec3(1,1,1)), f.x), f.y), f.z);
+  }
+
+  vec3 getGradientIrradiance(vec3 n, vec3 lightDirection) {
+    float d = dot(n, lightDirection);
+    float w = max(0.045, fwidth(d));
+    float mid = smoothstep(-0.12 - w, -0.12 + w, d);
+    float lit = smoothstep(0.50 - w, 0.50 + w, d);
+    return vec3(0.06 + 0.49 * mid + 0.45 * lit);
+  }
+`;
 
 async function start() {
   hint.textContent = 'Loading model…';
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue('--bg').trim());
+  const bg = getComputedStyle(document.documentElement)
+    .getPropertyValue('--bg').trim();
+  scene.background = new THREE.Color(bg || '#f3eddf');
 
   const camera = new THREE.PerspectiveCamera(35, 1, 0.001, 100);
   const target = new THREE.Vector3();
@@ -17,28 +56,27 @@ async function start() {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.NoToneMapping;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
   holder.appendChild(renderer.domElement);
 
-  const lights = [
-    new THREE.DirectionalLight(0xffffff, 2.2),
-    new THREE.DirectionalLight(0xffffff, 1.4),
-    new THREE.DirectionalLight(0xffffff, 1.0),
-  ];
-  lights[0].position.set(-4, 8, 6);
-  lights[1].position.set(5, 3, -4);
-  lights[2].position.set(-2, -2, 5);
-  lights.forEach(light => scene.add(light));
+  const effect = new OutlineEffect(renderer, {
+    defaultColor: new THREE.Color('#554d46').toArray(),
+    defaultThickness: 0.00085,
+    defaultAlpha: 0.65,
+  });
 
-  const levels = [55, 120, 195, 255];
-  const pixels = new Uint8Array(levels.flatMap(v => [v, v, v, 255]));
-  const gradient = new THREE.DataTexture(pixels, levels.length, 1, THREE.RGBAFormat);
-  gradient.minFilter = THREE.NearestFilter;
-  gradient.magFilter = THREE.NearestFilter;
-  gradient.generateMipmaps = false;
-  gradient.needsUpdate = true;
+  const key = new THREE.DirectionalLight('#fff0d8', 2.05);
+  key.castShadow = true;
+  key.shadow.mapSize.set(2048, 2048);
+  key.shadow.radius = 2;
+  key.shadow.bias = -0.00015;
+  key.shadow.intensity = 0.85;
+  scene.add(key, key.target);
+  scene.add(new THREE.HemisphereLight('#c9d9ed', '#d7c2a3', 1.1));
 
   let radius = 0;
-  function render() { renderer.render(scene, camera); }
+  function render() { effect.render(scene, camera); }
 
   function resize() {
     const width = holder.clientWidth;
@@ -62,30 +100,106 @@ async function start() {
 
   const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
   const model = (await loader.loadAsync('/assets/zotter.glb')).scene;
-
-  const makeToon = original => new THREE.MeshToonMaterial({
-    color: original.color ? original.color.clone() : new THREE.Color(0xffffff),
-    map: original.map || null,
-    gradientMap: gradient,
-    transparent: original.transparent,
-    opacity: original.opacity,
-    alphaTest: original.alphaTest,
-    side: original.side,
-  });
-  const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
-  model.traverse(object => {
-    if (!object.isMesh) return;
-    object.material = Array.isArray(object.material)
-      ? object.material.map(makeToon)
-      : makeToon(object.material);
-    object.add(new THREE.LineSegments(new THREE.EdgesGeometry(object.geometry, 15), edgeMaterial));
-  });
   scene.add(model);
 
   const bounds = new THREE.Box3().setFromObject(model);
+  const size = bounds.getSize(new THREE.Vector3());
   target.copy(bounds.getCenter(new THREE.Vector3()));
   radius = bounds.getBoundingSphere(new THREE.Sphere()).radius;
-  camera.position.copy(target).add(new THREE.Vector3(0.7, 0.5, 1).normalize());
+
+  const scale = 1 / Math.max(size.x, size.y, size.z);
+  const paintTransform = new THREE.Matrix4().makeScale(scale, scale, scale)
+    .multiply(new THREE.Matrix4().makeTranslation(-target.x, -target.y, -target.z));
+
+  function makeToon(original, paintMatrix) {
+    const color = original.color?.clone() ?? new THREE.Color('white');
+    const replacement = palette[color.getHexString()];
+    if (replacement) color.set(replacement);
+
+    const hsl = {};
+    color.getHSL(hsl, THREE.SRGBColorSpace);
+    color.setHSL(
+      hsl.h, hsl.s * 0.82,
+      THREE.MathUtils.lerp(hsl.l, 0.68, 0.08),
+      THREE.SRGBColorSpace
+    );
+
+    const material = new THREE.MeshToonMaterial({
+      color,
+      map: original.map || null,
+      alphaMap: original.alphaMap || null,
+      transparent: original.transparent,
+      opacity: original.opacity,
+      alphaTest: original.alphaTest,
+      side: original.side,
+      depthWrite: original.depthWrite,
+      vertexColors: original.vertexColors,
+      emissive: original.emissive?.clone() ?? new THREE.Color(0),
+      emissiveMap: original.emissiveMap || null,
+      emissiveIntensity: original.emissiveIntensity ?? 1,
+      dithering: true,
+    });
+
+    material.onBeforeCompile = shader => {
+      shader.uniforms.uPaintMatrix = { value: paintMatrix };
+      shader.vertexShader = shader.vertexShader
+        .replace('#include <common>', `
+          #include <common>
+          uniform mat4 uPaintMatrix;
+          varying vec3 vPaintPosition;
+        `)
+        .replace('#include <begin_vertex>', `
+          #include <begin_vertex>
+          vPaintPosition = (uPaintMatrix * vec4(position, 1.0)).xyz;
+        `);
+
+      shader.fragmentShader = shader.fragmentShader
+        .replace('#include <gradientmap_pars_fragment>', paintShader)
+        .replace('#include <color_fragment>', `
+          #include <color_fragment>
+          float wash = 0.75 * paintNoise(vPaintPosition * 7.0)
+                     + 0.25 * paintNoise(vPaintPosition * 23.0);
+          diffuseColor.rgb *= 1.0 + 0.035 * (wash * 2.0 - 1.0);
+        `);
+    };
+
+    material.customProgramCacheKey = () => 'zotter-painted';
+    material.userData.outlineParameters = {
+      visible: !original.transparent,
+      alpha: 0.65,
+    };
+    return material;
+  }
+
+  const oldMaterials = new Set();
+  model.traverse(object => {
+    if (!object.isMesh) return;
+    object.castShadow = true;
+    object.receiveShadow = true;
+    const paintMatrix = paintTransform.clone().multiply(object.matrixWorld);
+    const convert = original => {
+      oldMaterials.add(original);
+      return makeToon(original, paintMatrix);
+    };
+    object.material = Array.isArray(object.material)
+      ? object.material.map(convert)
+      : convert(object.material);
+  });
+  oldMaterials.forEach(material => material.dispose());
+
+  key.position.copy(target).addScaledVector(
+    new THREE.Vector3(-1.2, 1.8, 1).normalize(), radius * 4
+  );
+  key.target.position.copy(target);
+  const shadowCamera = key.shadow.camera;
+  shadowCamera.left = shadowCamera.bottom = -radius * 1.15;
+  shadowCamera.right = shadowCamera.top = radius * 1.15;
+  shadowCamera.near = radius * 0.1;
+  shadowCamera.far = radius * 7;
+  shadowCamera.updateProjectionMatrix();
+  key.shadow.normalBias = radius * 0.001;
+
+  camera.position.copy(target).add(new THREE.Vector3(1, 1, 1).normalize());
   resize();
   hint.textContent = '';
 
