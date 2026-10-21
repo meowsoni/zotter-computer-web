@@ -1,0 +1,10 @@
+---
+title: Blog
+layout: base.html
+---
+
+<div class="blog-feed">
+  {% for post in collections.blogPosts %}
+    {% render "post-entry.html", date: post.data.date, title: post.data.title, url: post.url, body: post.templateContent %}
+  {% endfor %}
+</div>

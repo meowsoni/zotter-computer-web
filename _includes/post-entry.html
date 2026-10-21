@@ -1,0 +1,6 @@
+<article class="post-entry">
+  <p>{{ date | date: "%d %B %Y" }}. {% if url %}<a href="{{ url }}">{{ title }}</a>{% else %}{{ title }}{% endif %}.</p>
+  <div class="post-body">
+    {{ body }}
+  </div>
+</article>

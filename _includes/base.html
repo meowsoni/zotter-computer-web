@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{{ excerpt | default: site.description | escape }}">
+  {%- if author %}
+  <meta name="author" content="{{ author | escape }}">
+  {%- endif %}
+  <title>{{ title | default: site.title }}</title>
+  <link rel="stylesheet" href="/styles.css">
+  {%- if usesThree %}
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+    }
+  }
+  </script>
+  {%- endif %}
+</head>
+<body{% if bodyClass %} class="{{ bodyClass }}"{% endif %}>
+  <a href="/" class="logo-link" aria-label="Home"><img class="logo" src="/logo.png" alt="zotter.computer"></a>
+  <main>
+    {{ content }}
+  </main>
+</body>
+</html>

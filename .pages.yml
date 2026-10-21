@@ -1,0 +1,42 @@
+media:
+  input: assets/images
+  output: /assets/images
+  rename: safe
+  categories: [image]
+
+content:
+  - name: blog
+    label: Blog posts
+    type: collection
+    path: blog
+    format: yaml-frontmatter
+    filename: "{primary}.md"
+    exclude: [index.html, blog.json]
+    view:
+      primary: title
+      sort: date
+      order: desc
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: date
+        label: Date
+        type: date
+        required: true
+        options:
+          format: yyyy-MM-dd
+      - name: author
+        label: Author
+        type: string
+      - name: excerpt
+        label: Excerpt
+        type: text
+        description: Used as the page's meta description.
+      - name: body
+        label: Body
+        type: rich-text
+        required: true
+        options:
+          format: markdown

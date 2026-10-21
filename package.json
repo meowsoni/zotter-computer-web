@@ -1,0 +1,15 @@
+{
+  "name": "zotter-computer-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Zotter Computer website",
+  "scripts": {
+    "build": "eleventy",
+    "start": "eleventy --serve"
+  },
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {
+    "@11ty/eleventy": "^3.1.7"
+  }
+}
