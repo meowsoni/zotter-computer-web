@@ -1,6 +1,6 @@
 ---
 title: The Long, Painstaking Search for the Perfect Keycaps (Part 1 of 5)
-date: 2026-10-22
+date: 2026-09-29
 author: Siddharth Soni
 excerpt: Cherry keycaps are great, but perhaps searching for another keycap is
   also imagining a different way to think about keycaps?
