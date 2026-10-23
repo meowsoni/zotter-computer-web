@@ -50,7 +50,8 @@ async function start() {
     .getPropertyValue('--bg').trim();
   scene.background = new THREE.Color(bg || '#f3eddf');
 
-  const camera = new THREE.PerspectiveCamera(35, 1, 0.001, 100);
+  const baseFov = 35;
+  const camera = new THREE.PerspectiveCamera(baseFov, 1, 0.001, 100);
   const target = new THREE.Vector3();
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -75,6 +76,7 @@ async function start() {
   scene.add(key, key.target);
   scene.add(new THREE.HemisphereLight('#c9d9ed', '#d7c2a3', 1.1));
 
+  const narrowScreen = window.matchMedia('(max-width: 600px)');
   let radius = 0;
   function render() { effect.render(scene, camera); }
 
@@ -83,13 +85,21 @@ async function start() {
     const height = holder.clientHeight;
     if (!width || !height) return;
     renderer.setSize(width, height, false);
+
+    const cssFrame = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--frame-height'));
+    const frame = cssFrame > 0 ? Math.min(cssFrame, height) : height;
+    const verticalFov = THREE.MathUtils.degToRad(baseFov);
     camera.aspect = width / height;
+    camera.fov = THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(verticalFov / 2) * height / frame));
+    const frameTop = Math.max(0, document.querySelector('main').getBoundingClientRect().top - holder.getBoundingClientRect().top);
+    if (frame < height) camera.setViewOffset(width, height, 0, (height - frame) / 2 - frameTop, width, height);
+    else camera.clearViewOffset();
     camera.updateProjectionMatrix();
 
     if (radius) {
-      const verticalFov = THREE.MathUtils.degToRad(camera.fov);
-      const horizontalFov = 2 * Math.atan(Math.tan(verticalFov / 2) * camera.aspect);
-      const distance = 0.95 * radius / Math.sin(Math.min(verticalFov, horizontalFov) / 2);
+      const horizontalFov = 2 * Math.atan(Math.tan(verticalFov / 2) * width / frame);
+      const fit = narrowScreen.matches ? 0.68 : 0.95;
+      const distance = fit * radius / Math.sin(Math.min(verticalFov, horizontalFov) / 2);
       const direction = camera.position.clone().sub(target).normalize();
       camera.position.copy(target).addScaledVector(direction, distance);
       camera.lookAt(target);

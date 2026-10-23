@@ -105,40 +105,58 @@ a:hover {
   margin-top: 32px;
 }
 
-.post-body {
-  position: relative;
-}
-
 .post-body p {
   margin: 0 0 16px;
 }
 
-.post-body img {
+.post-body::after {
+  content: "";
   display: block;
-  position: absolute;
-  top: 0;
-  right: -420px;
+  clear: both;
+}
+
+.post-body img {
+  float: right;
+  clear: right;
   width: 360px;
   height: auto;
+  margin: 0 -420px 16px 0;
 }
 
 @media (max-width: 1200px) {
   .post-body img {
-    position: static;
+    float: none;
     width: 100%;
-    margin-bottom: 16px;
+    margin: 0 0 16px;
   }
 }
 
 @media (max-width: 600px) {
+  .logo-link {
+    position: relative;
+    display: block;
+    margin: 12px auto 0;
+  }
+
+  :root {
+    --frame-height: 300px;
+    --logo-space: calc(min(100vw, 220px) * 606 / 1916 + 12px);
+  }
+
   main {
+    position: relative;
     padding: 8px 12px;
   }
 
   #viewer {
-    position: static;
-    height: 300px;
-    margin-bottom: 8px;
+    position: absolute;
+    top: calc(-1 * var(--logo-space));
+    left: 0;
+    height: calc(var(--logo-space) + var(--frame-height) + 260px);
+  }
+
+  .text {
+    margin-top: var(--frame-height);
   }
 
   .hint {
