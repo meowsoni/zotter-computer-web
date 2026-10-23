@@ -1,11 +1,11 @@
 ---
-title: The Long, Painstaking Search for the Perfect Keycaps (Part 1 of 5)
+title: Keycaps for Pleasure (Part 1 of 5)
 date: 2026-09-29
 author: Siddharth Soni
 excerpt: Cherry keycaps are great, but perhaps searching for another keycap is
   also imagining a different way to think about keycaps?
 ---
-All sketches of Zotter—from ideational to engineering—have it wearing Cherry keycaps. It was a simple decision: Cherry is widely available, easy to get used to, fast, reliable, cheap. I had always used Cherry and found them to be the fastest, most ergonomic, and least error-prone keycap profile for a traditional setup. Perhaps a little bit of Cherry history won't go amiss, because I've lately been thinking whether Cherry keycaps were designed to solve a problem that does not exist for me? And also if the standardization of keycaps in the 1980s with the advent of the '+' MX stem prematurely narrowed the possibilities of other more democratic approaches to keycap designs? Particularly ones that may allow us to innovate at smaller scales, such as at home using casting or resin 3D printing? It is, after all, the *one* surface of any device that we touch the most, not to mention the one that undergoes the most amount of stress (and if you're into ABS plastics like me—shine).
+All sketches of Zotter—from ideational to engineering—have it wearing Cherry keycaps. It was a simple decision: Cherry is widely available, easy to get used to, fast, reliable, cheap. I had always used Cherry and found them to be the fastest, most ergonomic, and least error-prone keycap profile for a traditional setup like Zotter53's 40% + Macro row. Perhaps a little bit of Cherry history wouldn't go amiss, because I've lately been thinking whether Cherry keycaps were designed to solve a problem that does not exist for me? And also if the standardization of keycaps in the 1980s with the advent of the '+' MX stem prematurely narrowed the possibilities of other more democratic approaches to keycap designs? Particularly ones that may allow us to innovate at smaller scales, such as at home using casting or resin 3D printing? It is, after all, the *one* surface of any device that we touch the most, not to mention the one that undergoes the most amount of stress (and if you're into ABS plastics like me—shine).
 
 ![](/assets/images/cherry.png)
 
