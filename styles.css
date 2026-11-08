@@ -1,16 +1,33 @@
+@import url("https://fonts.googleapis.com/css2?family=Merriweather:wght@400&display=swap");
+
 :root {
   --bg: #ebebdd;
 }
 
 * {
   box-sizing: border-box;
+  font-family: "Merriweather", Georgia, serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+html,
+body,
+button,
+input,
+textarea,
+select {
+  font-family: "Merriweather", Georgia, serif;
+  font-weight: 400;
+  font-style: normal;
 }
 
 body {
   margin: 0;
   background: var(--bg);
   color: #111;
-  font: 20px/1.5 Arial, Helvetica, sans-serif;
+  font-size: 20px;
+  line-height: 1.5;
 }
 
 main {
@@ -21,8 +38,28 @@ main {
   padding-top: 8px;
 }
 
-p {
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   margin: 0 0 20px;
+  font-size: inherit;
+  font-weight: 400;
+  font-style: normal;
+}
+
+a,
+strong,
+b,
+em,
+i {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 400;
+  font-style: normal;
 }
 
 a {
