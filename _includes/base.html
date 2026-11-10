@@ -3,11 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="{{ excerpt | default: site.description | escape }}">
+  <meta name="description" content="{{ excerpt | default: description | default: site.description | escape }}">
   {%- if author %}
   <meta name="author" content="{{ author | escape }}">
   {%- endif %}
-  <title>{{ title | default: site.title }}</title>
+  <title>{% if title %}{{ title | escape }} · {% endif %}{{ site.title }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400&display=swap">
   <link rel="stylesheet" href="/styles.css">
   {%- if usesThree %}
   <script type="importmap">
@@ -21,6 +24,11 @@
   {%- endif %}
 </head>
 <body{% if bodyClass %} class="{{ bodyClass }}"{% endif %}>
+  <nav class="site-nav" aria-label="Site">
+    {%- for item in site.nav %}
+    <a href="{{ item.url }}"{% if page.url == item.url %} aria-current="page"{% endif %}>{{ item.label }}</a>
+    {%- endfor %}
+  </nav>
   <a href="/" class="logo-link" aria-label="Home"><img class="logo" src="/logo.png" alt="zotter.computer"></a>
   <main>
     {{ content }}

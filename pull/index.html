@@ -1,0 +1,84 @@
+---
+layout: base.html
+title: Zotter Pull
+description: Browse and edit notes on Zotter from your browser.
+bodyClass: pull-page
+---
+<header class="pull-appbar" id="appbar" hidden>
+  <div class="pull-appbar-content">
+    <div class="pull-session" id="session-nav" hidden>
+      <div class="pull-connection">
+        <span class="pull-dot" aria-hidden="true"></span>
+        <span class="pull-connection-label">Zotter53 connected</span>
+      </div>
+
+      <nav class="pull-breadcrumb" aria-label="Current location">
+        <span aria-hidden="true">&gt;</span>
+        <button class="pull-crumb" id="back" type="button">Directory</button>
+        <span class="pull-file-crumb" id="file-crumb" hidden>
+          <span aria-hidden="true">&gt;</span>
+          <span class="pull-editor-title" id="editor-title">Select a note</span>
+          <span class="pull-actions">
+            <button class="pull-control pull-copy" id="copy"
+              type="button" aria-label="Copy" title="Copy" disabled>
+              <svg class="pull-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="8" y="8" width="11" height="12" rx="2"></rect>
+                <path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2h2"></path>
+              </svg>
+              <span class="pull-control-label">Copy</span>
+            </button>
+            <button class="pull-control pull-save" id="save"
+              type="button" aria-label="Save"
+              title="Save (overwrites the file on Zotter)" disabled>
+              <svg class="pull-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 3h13l3 3v15H4zM8 3v6h8V3M8 21v-7h8v7"></path>
+              </svg>
+              <span class="pull-control-label">Save</span>
+            </button>
+          </span>
+        </span>
+      </nav>
+
+      <button class="pull-control pull-control--primary" id="end"
+        type="button" aria-label="End Session" title="End Session" disabled>
+        <svg class="pull-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M10 4H4v16h6M14 8l4 4-4 4M8 12h10"></path>
+        </svg>
+        <span class="pull-control-label">End Session</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="pull-app">
+  <section class="pull-connect" id="connect-view">
+    <div class="pull-connect-stack">
+      <button class="pull-control pull-control--primary pull-connect-button"
+        id="connect" type="button">
+        <svg class="pull-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="2.5" y="5" width="19" height="14" rx="2"></rect>
+          <path d="M6 9h1M10 9h1M14 9h1M18 9h1M6 13h1M10 13h1M14 13h1M18 13h1M7 16h10"></path>
+        </svg>
+        <span>Connect to Zotter</span>
+      </button>
+      <p class="pull-home-notice">
+        This is a web-based utility running locally in your browser. We cannot see your files.
+      </p>
+    </div>
+  </section>
+
+  <section class="pull-workspace" id="workspace" hidden>
+    <section id="directory-view">
+      <nav class="pull-note-list" id="notes-list" aria-label="Notes"></nav>
+    </section>
+
+    <section id="editor-view" hidden>
+      <textarea class="pull-editor" id="editor" disabled spellcheck="true"
+        aria-label="Note editor"></textarea>
+    </section>
+  </section>
+
+  <p class="pull-notice" id="status" role="status" hidden></p>
+</div>
+
+<script type="module" src="/pull/pull.js"></script>

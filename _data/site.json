@@ -1,4 +1,12 @@
 {
   "title": "Zotter Computer",
-  "description": "Zotter, a free/libre writing and note-taking device, built by hand in Cambridge, UK."
+  "description": "Zotter, a free/libre writing and note-taking device, built by hand in Cambridge, UK.",
+  "nav": [
+    { "label": "about", "url": "/about/" },
+    { "label": "blog", "url": "/blog/" },
+    { "label": "docs", "url": "/docs/" },
+    { "label": "waitlist", "url": "/waitlist/" },
+    { "label": "donate", "url": "/donate/" },
+    { "label": "pull", "url": "/pull/" }
+  ]
 }

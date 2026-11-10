@@ -2,6 +2,7 @@ module.exports = function(eleventyConfig) {
   eleventyConfig.addPassthroughCopy('logo.png');
   eleventyConfig.addPassthroughCopy('styles.css');
   eleventyConfig.addPassthroughCopy('assets');
+  eleventyConfig.addPassthroughCopy('pull/pull.js');
 
   eleventyConfig.addCollection('blogPosts', collection => {
     return collection.getFilteredByGlob('./blog/*.md').reverse();

@@ -5,6 +5,10 @@ import { OutlineEffect } from 'three/addons/effects/OutlineEffect.js';
 
 const holder = document.getElementById('viewer');
 const hint = document.getElementById('viewer-hint');
+const main = document.querySelector('main');
+const rootStyle = getComputedStyle(document.documentElement);
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+const MAX_TILT = Math.PI / 3;
 
 const palette = {
   '9e917f': '#d9c9a9',
@@ -46,9 +50,8 @@ async function start() {
   hint.textContent = 'Loading model…';
 
   const scene = new THREE.Scene();
-  const bg = getComputedStyle(document.documentElement)
-    .getPropertyValue('--bg').trim();
-  scene.background = new THREE.Color(bg || '#f3eddf');
+  const bg = rootStyle.getPropertyValue('--bg').trim();
+  scene.background = new THREE.Color(bg || '#ebebdd');
 
   const baseFov = 35;
   const camera = new THREE.PerspectiveCamera(baseFov, 1, 0.001, 100);
@@ -86,12 +89,12 @@ async function start() {
     if (!width || !height) return;
     renderer.setSize(width, height, false);
 
-    const cssFrame = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--frame-height'));
+    const cssFrame = parseFloat(rootStyle.getPropertyValue('--frame-height'));
     const frame = cssFrame > 0 ? Math.min(cssFrame, height) : height;
     const verticalFov = THREE.MathUtils.degToRad(baseFov);
     camera.aspect = width / height;
     camera.fov = THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(verticalFov / 2) * height / frame));
-    const frameTop = Math.max(0, document.querySelector('main').getBoundingClientRect().top - holder.getBoundingClientRect().top);
+    const frameTop = Math.max(0, main.getBoundingClientRect().top - holder.getBoundingClientRect().top);
     if (frame < height) camera.setViewOffset(width, height, 0, (height - frame) / 2 - frameTop, width, height);
     else camera.clearViewOffset();
     camera.updateProjectionMatrix();
@@ -214,12 +217,21 @@ async function start() {
   hint.textContent = '';
 
   let velX = 0, velY = 0;
-  let frame = 0;
+  let rafId = 0;
+  const baseTilt = model.rotation.x;
+
+  function tiltBy(delta) {
+    const wanted = model.rotation.x + delta;
+    model.rotation.x = THREE.MathUtils.clamp(
+      wanted, baseTilt - MAX_TILT, baseTilt + MAX_TILT
+    );
+    return model.rotation.x === wanted;
+  }
 
   function tick() {
-    frame = 0;
+    rafId = 0;
     model.rotation.y += velY;
-    model.rotation.x += velX;
+    if (!tiltBy(velX)) velX = 0;
     velX = Math.abs(velX) < 1e-5 ? 0 : velX * 0.92;
     velY = Math.abs(velY) < 1e-5 ? 0 : velY * 0.92;
     render();
@@ -227,14 +239,16 @@ async function start() {
   }
 
   function requestRender() {
-    if (!frame) frame = requestAnimationFrame(tick);
+    if (!rafId) rafId = requestAnimationFrame(tick);
   }
 
   function rotateBy(dx, dy, sensitivity) {
     model.rotation.y += dx * sensitivity;
-    model.rotation.x += dy * sensitivity;
-    velY += dx * sensitivity * 0.2;
-    velX += dy * sensitivity * 0.2;
+    tiltBy(dy * sensitivity);
+    if (!reducedMotion.matches) {
+      velY += dx * sensitivity * 0.2;
+      velX += dy * sensitivity * 0.2;
+    }
     requestRender();
   }
 
@@ -254,12 +268,22 @@ async function start() {
   canvas.addEventListener('touchend', endTouch);
   canvas.addEventListener('touchcancel', endTouch);
 
-  const mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+  // With reduced motion, the model only turns while it is dragged.
+  let mouse = null;
+  let dragging = false;
+  canvas.addEventListener('pointerdown', e => {
+    if (e.pointerType === 'mouse') dragging = true;
+  });
+  window.addEventListener('pointerup', () => { dragging = false; });
+  document.documentElement.addEventListener('pointerleave', () => {
+    mouse = null;
+  });
   window.addEventListener('pointermove', e => {
     if (e.pointerType !== 'mouse') return;
-    rotateBy(e.clientX - mouse.x, e.clientY - mouse.y, 0.002);
-    mouse.x = e.clientX;
-    mouse.y = e.clientY;
+    if (mouse && (dragging || !reducedMotion.matches)) {
+      rotateBy(e.clientX - mouse.x, e.clientY - mouse.y, 0.002);
+    }
+    mouse = { x: e.clientX, y: e.clientY };
   });
 }
 
