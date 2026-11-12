@@ -71,20 +71,6 @@ a:hover {
   padding: 24px 16px 0;
 }
 
-.logo-link {
-  position: fixed;
-  right: 0;
-  bottom: 0;
-  z-index: 3;
-  width: min(100vw, 220px);
-}
-
-.logo {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
 #viewer {
   position: fixed;
   inset: 0;
@@ -155,10 +141,6 @@ a:hover {
 }
 
 /* Zotter Pull */
-
-.pull-page .logo-link {
-  display: none;
-}
 
 .pull-page,
 .pull-page main,
@@ -464,7 +446,6 @@ a:hover {
 @media (max-width: 600px) {
   :root {
     --frame-height: 300px;
-    --logo-space: calc(min(100vw, 220px) * 606 / 1916 + 12px);
   }
 
   main {
@@ -476,17 +457,11 @@ a:hover {
     padding: 12px 12px 0;
   }
 
-  .logo-link {
-    position: relative;
-    display: block;
-    margin: 12px auto 0;
-  }
-
   #viewer {
     position: absolute;
-    top: calc(-1 * var(--logo-space));
+    top: 0;
     left: 0;
-    height: calc(var(--logo-space) + var(--frame-height) + 260px);
+    height: calc(var(--frame-height) + 260px);
   }
 
   .text {

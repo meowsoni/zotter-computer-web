@@ -26,10 +26,13 @@
 <body{% if bodyClass %} class="{{ bodyClass }}"{% endif %}>
   <nav class="site-nav" aria-label="Site">
     {%- for item in site.nav %}
-    <a href="{{ item.url }}"{% if page.url == item.url %} aria-current="page"{% endif %}>{{ item.label }}</a>
+    {%- if page.url == item.url %}
+    <span>{{ item.label }}</span>
+    {%- else %}
+    <a href="{{ item.url }}">{{ item.label }}</a>
+    {%- endif %}
     {%- endfor %}
   </nav>
-  <a href="/" class="logo-link" aria-label="Home"><img class="logo" src="/logo.png" alt="zotter.computer"></a>
   <main>
     {{ content }}
   </main>

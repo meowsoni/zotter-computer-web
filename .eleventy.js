@@ -1,5 +1,4 @@
 module.exports = function(eleventyConfig) {
-  eleventyConfig.addPassthroughCopy('logo.png');
   eleventyConfig.addPassthroughCopy('styles.css');
   eleventyConfig.addPassthroughCopy('assets');
   eleventyConfig.addPassthroughCopy('pull/pull.js');
